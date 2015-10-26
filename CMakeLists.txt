@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(cv_project1)
+project(cv_proj)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
   geometry_msgs
-  neato_node
   rospy
   sensor_msgs
   std_msgs
@@ -103,8 +103,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES cv_project1
-#  CATKIN_DEPENDS geometry_msgs neato_node rospy sensor_msgs std_msgs
+#  LIBRARIES cv_proj
+#  CATKIN_DEPENDS cv_bridge geometry_msgs rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 
@@ -120,24 +120,24 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(cv_project1
-#   src/${PROJECT_NAME}/cv_project1.cpp
+# add_library(cv_proj
+#   src/${PROJECT_NAME}/cv_proj.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(cv_project1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(cv_proj ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(cv_project1_node src/cv_project1_node.cpp)
+# add_executable(cv_proj_node src/cv_proj_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(cv_project1_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(cv_proj_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(cv_project1_node
+# target_link_libraries(cv_proj_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -156,7 +156,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS cv_project1 cv_project1_node
+# install(TARGETS cv_proj cv_proj_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -181,7 +181,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_cv_project1.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_cv_proj.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

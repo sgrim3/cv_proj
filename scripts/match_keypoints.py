@@ -44,6 +44,7 @@ class KeyPointMatcherDemo(object):
 		matches = self.matcher.knnMatch(des1,des2,k=2)
 
 		good_matches = []
+		print good_matches
 		for m,n in matches:
 			# make sure the distance to the closest match is sufficiently better than the second closest
 			if (m.distance < self.ratio_threshold*n.distance and
