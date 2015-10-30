@@ -10,7 +10,7 @@ from cv_bridge import CvBridge
 import cv2
 import numpy as np
 from geometry_msgs.msg import Twist, Vector3
-import match_keypoints as mk
+import match_keypoints1 as mk
 
 class CameraImage(object):
     """ The BallTracker is a Python object that encompasses a ROS node 
@@ -26,12 +26,14 @@ class CameraImage(object):
         self.bridge = CvBridge()                    # used to convert ROS messages to OpenCV
         self.good_matches=[]
         rospy.Subscriber(image_topic, Image, self.process_image, queue_size=1)
-        self.pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
+        # self.pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
         self.twist = Twist()
-        cv2.namedWindow('video_window')
 
-        self.kp_matcher = mk.KeyPointMatcherDemo("dest.jpg","dest.jpg","SIFT")
+        self.kp_matcherStop = mk.KeyPointMatcherDemo("dest.jpg","dest.jpg","SIFT")
+        self.kp_matcherYield = mk.KeyPointMatcherDemo("yield1.jpg","yield1.jpg","SIFT")
         self.initialized=True
+        self.seesYieldSign = False
+        self.seesStopSign = False
 
 
 
@@ -40,56 +42,92 @@ class CameraImage(object):
             called cv_image for subsequent processing """
         if self.initialized:
             self.cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
-            # binary_image = cv2.inRange(self.cv_image, (self.blue_lower_bound,self.green_lower_bound,self.red_lower_bound), (self.blue_upper_bound,self.green_upper_bound,self.red_upper_bound))
-            print self.cv_image.shape
-            #cv2.imshow('video_window', self.cv_image)
-            #cv2.waitKey(100)
 
-            self.kp_matcher.im2=self.cv_image
+            self.kp_matcherStop.im2=self.cv_image
+            self.kp_matcherYield.im2 = self.cv_image
 
     def run(self):
         """ The main run loop, in this node it doesn't do anything """
         r = rospy.Rate(5)
-        cv2.namedWindow('UI')
+        # cv2.namedWindow('UI')
         cv2.namedWindow('MYWIN')
-        cv2.setMouseCallback("MYWIN",self.mouse_event,self.kp_matcher)
-        cv2.createTrackbar('Corner Threshold', 'UI', 0, 100, self.set_corner_threshold)
-        cv2.createTrackbar('Ratio Threshold', 'UI', 100, 100, self.set_ratio_threshold)
+        # cv2.setMouseCallback("MYWIN",self.mouse_event,self.kp_matcher)
+        # cv2.createTrackbar('Corner Threshold', 'UI', 0, 100, self.set_corner_threshold)
+        # cv2.createTrackbar('Ratio Threshold', 'UI', 100, 100, self.set_ratio_threshold)
+
+        # cv2.createTrackbar('Red Lower', 'UI', 0, 255, self.set_red_lower_bound)
+        # cv2.createTrackbar('Red Upper', 'UI', 255, 255, self.set_red_upper_bound)
+        # cv2.createTrackbar('Blue Lower', 'UI', 0, 255, self.set_blue_lower_bound)
+        # cv2.createTrackbar('Blue Upper', 'UI', 255, 255, self.set_blue_upper_bound)
+        # cv2.createTrackbar('Green Lower', 'UI', 0, 100, self.set_green_lower_bound)
+        # cv2.createTrackbar('Green Upper', 'UI', 255, 255, self.set_green_upper_bound)
+
         while not rospy.is_shutdown():
                
-            self.good_matches=self.kp_matcher.compute_matches()
-            if len(self.good_matches)>8:
+            self.good_matchesStop=self.kp_matcherStop.compute_matches()
+            self.good_matchesYield=self.kp_matcherYield.compute_matches()
+
+                        #TODO- change 8
+            if len(self.good_matchesStop)>4 and len(self.good_matchesStop)>len(self.good_matchesYield):
+                self.seesStopSign = True
+                self.seesYieldSign = False
                 print "STOOOOOOOOOOOOOOP"
                 self.twist.linear.x = 0
-                self.pub.publish(self.twist)
+                # self.pub.publish(self.twist)
+            elif len(self.good_matchesYield)>4 and len(self.good_matchesStop)<len(self.good_matchesYield):
+                self.seesYieldSign = True
+                self.seesStopSign = False
+                print "YIEEEEEEEEEEELDDDDD"
             else:
+                self.seesYieldSign = False
+                self.seesStopSign = False
                 print "GOOOOOOOOOOOOOOOOO"
-                self.twist.linear.x = 0.1
-                self.pub.publish(self.twist)
-            # cv2.resize(self.kp_matcher.im,(50,100))
-            cv2.imshow("MYWIN",self.kp_matcher.im)
 
-            # while True:
-            #     cv2.imshow("MYWIN",self.kp_matcher.im)
+            cv2.imshow("MYWIN",self.kp_matcherStop.im)
+            cv2.imshow("MYWIN1",self.kp_matcherYield.im)
             cv2.waitKey(50)
             r.sleep()
         cv2.destroyAllWindows()
         
-    def set_corner_threshold(self,thresh):
-        """ Sets the threshold to consider an interest point a corner.  The higher the value
-            the more the point must look like a corner to be considered """
-        self.kp_matcher.corner_threshold = thresh/1000.0
+    # def set_corner_threshold(self,thresh):
+    #     """ Sets the threshold to consider an interest point a corner.  The higher the value
+    #         the more the point must look like a corner to be considered """
+    #     self.kp_matcher.corner_threshold = thresh/1000.0
 
-    def set_ratio_threshold(self,ratio):
-        """ Sets the ratio of the nearest to the second nearest neighbor to consider the match a good one """
+    # def set_ratio_threshold(self,ratio):
+    #     """ Sets the ratio of the nearest to the second nearest neighbor to consider the match a good one """
         
-        self.kp_matcher.ratio_threshold = ratio/100.0
+    #     self.kp_matcher.ratio_threshold = ratio/100.0
 
-    def mouse_event(self,event,x,y,flag,im):
-        """ Handles mouse events.  In this case when the user clicks, the matches are recomputed """
-        if event == cv2.EVENT_FLAG_LBUTTON:
-            self.good_matches = self.kp_matcher.compute_matches()
-            print self.good_matches
+    # def set_red_lower_bound(self, val):
+    #     """ A callback function to handle the OpenCV slider to select the red lower bound """
+    #     self.kp_matcher.red_lower_bound = val
+
+    # def set_green_lower_bound(self, val):
+    #     """ A callback function to handle the OpenCV slider to select the green lower bound """
+    #     self.kp_matcher.green_lower_bound = val
+
+    # def set_blue_lower_bound(self, val):
+    #     """ A callback function to handle the OpenCV slider to select the  blue lower bound """
+    #     self.kp_matcher.blue_lower_bound = val
+
+    # def set_red_upper_bound(self, val):
+    #     """ A callback function to handle the OpenCV slider to select the red upper bound """
+    #     self.kp_matcher.red_upper_bound = val
+
+    # def set_green_upper_bound(self, val):
+    #     """ A callback function to handle the OpenCV slider to select the green upper bound """
+    #     self.kp_matcher.green_upper_bound = val
+
+    # def set_blue_upper_bound(self, val):
+    #     """ A callback function to handle the OpenCV slider to select the blue upper bound """
+    #     self.kp_matcher.blue_upper_bound = val
+
+    # def mouse_event(self,event,x,y,flag,im):
+    #     """ Handles mouse events.  In this case when the user clicks, the matches are recomputed """
+    #     if event == cv2.EVENT_FLAG_LBUTTON:
+    #         self.good_matches = self.kp_matcher.compute_matches()
+    #         print self.good_matches
 if __name__ == '__main__':
     node = CameraImage("/camera/image_raw")
     node.run()
