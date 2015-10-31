@@ -11,6 +11,8 @@ import cv2
 import numpy as np
 from geometry_msgs.msg import Twist, Vector3
 import match_keypoints1 as mk
+import hough
+import rospkg
 
 class CameraImage(object):
     """ The BallTracker is a Python object that encompasses a ROS node 
@@ -34,8 +36,14 @@ class CameraImage(object):
         self.initialized=True
         self.seesYieldSign = False
         self.seesStopSign = False
+        
 
+        rospack = rospkg.RosPack()
+        img_file = rospack.get_path('cv_proj') + '/scripts/' + "green.jpg"
+        img=cv2.imread(img_file)
+        self.hough_finder = hough.HoughLineDetector(img)
 
+        self.initialized=True
 
     def process_image(self, msg):
         """ Process image messages from ROS and stash them in an attribute
@@ -45,6 +53,8 @@ class CameraImage(object):
 
             self.kp_matcherStop.im2=self.cv_image
             self.kp_matcherYield.im2 = self.cv_image
+
+            self.hough_finder.img=self.cv_image
 
     def run(self):
         """ The main run loop, in this node it doesn't do anything """
@@ -62,10 +72,12 @@ class CameraImage(object):
         # cv2.createTrackbar('Green Lower', 'UI', 0, 100, self.set_green_lower_bound)
         # cv2.createTrackbar('Green Upper', 'UI', 255, 255, self.set_green_upper_bound)
 
+        cv2.namedWindow('hough')
         while not rospy.is_shutdown():
                
             self.good_matchesStop=self.kp_matcherStop.compute_matches()
             self.good_matchesYield=self.kp_matcherYield.compute_matches()
+            see_rect = self.hough_finder.find_lines()
 
                         #TODO- change 8
             if len(self.good_matchesStop)>4 and len(self.good_matchesStop)>len(self.good_matchesYield):
@@ -83,11 +95,13 @@ class CameraImage(object):
                 self.seesStopSign = False
                 print "GOOOOOOOOOOOOOOOOO"
 
+            cv2.imshow("hough",self.hough_finder.img)
             cv2.imshow("MYWIN",self.kp_matcherStop.im)
             cv2.imshow("MYWIN1",self.kp_matcherYield.im)
             cv2.waitKey(50)
             r.sleep()
         cv2.destroyAllWindows()
+
         
     # def set_corner_threshold(self,thresh):
     #     """ Sets the threshold to consider an interest point a corner.  The higher the value
