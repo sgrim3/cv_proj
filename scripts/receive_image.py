@@ -30,7 +30,7 @@ class CameraImage(object):
         self.twist = Twist()
 
         self.kp_matcherStop = mk.KeyPointMatcherDemo("dest.jpg","dest.jpg","SIFT")
-        self.kp_matcherYield = mk.KeyPointMatcherDemo("yield1.jpg","yield1.jpg","SIFT")
+        self.kp_matcherYield = mk.KeyPointMatcherDemo("yield.jpg","yield.jpg","SIFT")
         self.initialized=True
         self.seesYieldSign = False
         self.seesStopSign = False
