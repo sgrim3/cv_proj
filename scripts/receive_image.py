@@ -28,7 +28,7 @@ class CameraImage(object):
         self.bridge = CvBridge()                    # used to convert ROS messages to OpenCV
         self.good_matches=[]
         rospy.Subscriber(image_topic, Image, self.process_image, queue_size=1)
-        # self.pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
+        self.pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
         self.twist = Twist()
 
         self.kp_matcherStop = mk.KeyPointMatcherDemo("dest.jpg","dest.jpg","SIFT")
@@ -86,9 +86,9 @@ class CameraImage(object):
                 self.seesStopSign = True
                 self.seesYieldSign = False
                 print "STOOOOOOOOOOOOOOP"
-                # rospy.sleep(1000)
                 self.twist.linear.x = 0
-                # self.pub.publish(self.twist)
+                self.pub.publish(self.twist)
+                r.sleep()
             elif len(self.good_matchesYield)>4 and len(self.good_matchesStop)<len(self.good_matchesYield):
                 self.seesYieldSign = True
                 self.seesStopSign = False
@@ -97,6 +97,8 @@ class CameraImage(object):
                 self.seesYieldSign = False
                 self.seesStopSign = False
                 print "GOOOOOOOOOOOOOOOOO"
+                self.twist.linear.x = 0.1
+                self.pub.publish(self.twist)
             
 
             self.see_rect_last = see_rect

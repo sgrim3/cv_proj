@@ -40,7 +40,6 @@ class HoughLineDetector(object):
 				for i in range(2):
 					if rect[i][1]>300:
 						return True
-		print 'hi'
 		# while not rospy.is_shutdown():
 		# 	cv2.namedWindow('MYWIN2')
 		# 	cv2.imshow("MYWIN2",edges)
