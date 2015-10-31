@@ -11,6 +11,8 @@ import cv2
 import numpy as np
 from geometry_msgs.msg import Twist, Vector3
 import match_keypoints as mk
+import hough
+import rospkg
 
 class CameraImage(object):
     """ The BallTracker is a Python object that encompasses a ROS node 
@@ -29,9 +31,14 @@ class CameraImage(object):
         cv2.namedWindow('video_window')
 
         self.kp_matcher = mk.KeyPointMatcherDemo("dest.jpg","dest.jpg","SIFT")
+        
+
+        rospack = rospkg.RosPack()
+        img_file = rospack.get_path('cv_proj') + '/scripts/' + "green.jpg"
+        img=cv2.imread(img_file)
+        self.hough_finder = hough.HoughLineDetector(img)
+
         self.initialized=True
-
-
 
     def process_image(self, msg):
         """ Process image messages from ROS and stash them in an attribute
@@ -39,35 +46,42 @@ class CameraImage(object):
         if self.initialized:
             self.cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
             # binary_image = cv2.inRange(self.cv_image, (self.blue_lower_bound,self.green_lower_bound,self.red_lower_bound), (self.blue_upper_bound,self.green_upper_bound,self.red_upper_bound))
-            print self.cv_image.shape
-            #cv2.imshow('video_window', self.cv_image)
-            #cv2.waitKey(100)
+            #print self.cv_image.shape
+            cv2.imshow('video_window', self.cv_image)
+            cv2.waitKey(100)
 
             self.kp_matcher.im2=self.cv_image
+
+            self.hough_finder.img=self.cv_image
 
     def run(self):
         """ The main run loop, in this node it doesn't do anything """
         r = rospy.Rate(5)
         cv2.namedWindow('UI')
         cv2.namedWindow('MYWIN')
+        cv2.namedWindow('hough')
         cv2.setMouseCallback("MYWIN",self.mouse_event,self.kp_matcher)
         cv2.createTrackbar('Corner Threshold', 'UI', 0, 100, self.set_corner_threshold)
         cv2.createTrackbar('Ratio Threshold', 'UI', 100, 100, self.set_ratio_threshold)
         while not rospy.is_shutdown():
                
             self.good_matches=self.kp_matcher.compute_matches()
-            if len(self.good_matches)>8:
-                print "STOOOOOOOOOOOOOOP"
-            else:
-                print "GOOOOOOOOOOOOOOOOO"
+            see_rect = self.hough_finder.find_lines()
+            # if len(self.good_matches)>8:
+            #     print "STOOOOOOOOOOOOOOP"
+            # else:
+            #     print "GOOOOOOOOOOOOOOOOO"
+            print see_rect
             # cv2.resize(self.kp_matcher.im,(50,100))
             cv2.imshow("MYWIN",self.kp_matcher.im)
+            cv2.imshow("hough",self.hough_finder.img)
 
             # while True:
             #     cv2.imshow("MYWIN",self.kp_matcher.im)
             cv2.waitKey(50)
             r.sleep()
         cv2.destroyAllWindows()
+
         
     def set_corner_threshold(self,thresh):
         """ Sets the threshold to consider an interest point a corner.  The higher the value

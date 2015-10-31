@@ -13,8 +13,8 @@ class KeyPointMatcherDemo(object):
 	    descriptor extraction, and descriptor matching in OpenCV """
 	def __init__(self, im1_file, im2_file, descriptor_name):
 		rospack = rospkg.RosPack()
-		self.im1_file = rospack.get_path('cv_project1') + '/scripts/' + im1_file
-		self.im2_file = rospack.get_path('cv_project1') + '/scripts/' + im2_file
+		self.im1_file = rospack.get_path('cv_proj') + '/scripts/' + im1_file
+		self.im2_file = rospack.get_path('cv_proj') + '/scripts/' + im2_file
 
 		self.detector = cv2.FeatureDetector_create(descriptor_name)
 		self.extractor = cv2.DescriptorExtractor_create(descriptor_name)
@@ -44,7 +44,7 @@ class KeyPointMatcherDemo(object):
 		matches = self.matcher.knnMatch(des1,des2,k=2)
 
 		good_matches = []
-		print good_matches
+		#print good_matches
 		for m,n in matches:
 			# make sure the distance to the closest match is sufficiently better than the second closest
 			if (m.distance < self.ratio_threshold*n.distance and
@@ -67,7 +67,7 @@ class KeyPointMatcherDemo(object):
 			cv2.circle(self.im,(int(pts1[i,0]),int(pts1[i,1])),2,(255,0,0),2)
 			cv2.circle(self.im,(int(pts2[i,0]+self.im1.shape[1]),int(pts2[i,1])),2,(255,0,0),2)
 			cv2.line(self.im,(int(pts1[i,0]),int(pts1[i,1])),(int(pts2[i,0]+self.im1.shape[1]),int(pts2[i,1])),(0,255,0))
-		return good_matches
+		return pts2
 
 def set_corner_threshold(thresh):
 	""" Sets the threshold to consider an interest point a corner.  The higher the value
@@ -87,7 +87,7 @@ def mouse_event(event,x,y,flag,im):
 
 if __name__ == '__main__':
 	# descriptor can be: SIFT, SURF, BRIEF, BRISK, ORB, FREAK
-	matcher = KeyPointMatcherDemo('frame0000.jpg','frame0001.jpg','SIFT')
+	matcher = KeyPointMatcherDemo('lines.jpg','lines.jpg','SIFT')
 
 	# setup a basic UI
 	cv2.namedWindow('UI')
