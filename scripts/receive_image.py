@@ -13,6 +13,7 @@ from geometry_msgs.msg import Twist, Vector3
 import match_keypoints1 as mk
 import hough
 import rospkg
+import MotionDetection1 as md
 
 class CameraImage(object):
     """ The BallTracker is a Python object that encompasses a ROS node 
@@ -28,11 +29,12 @@ class CameraImage(object):
         self.bridge = CvBridge()                    # used to convert ROS messages to OpenCV
         self.good_matches=[]
         rospy.Subscriber(image_topic, Image, self.process_image, queue_size=1)
-        self.pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
+        self.pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
         self.twist = Twist()
 
         self.kp_matcherStop = mk.KeyPointMatcherDemo("dest.jpg","dest.jpg","SIFT")
         self.kp_matcherYield = mk.KeyPointMatcherDemo("yield.jpg","yield.jpg","SIFT")
+        self.motionDetector = md.MotionDetection()
         self.initialized=True
         self.seesYieldSign = False
         self.seesStopSign = False
@@ -78,8 +80,8 @@ class CameraImage(object):
                
             self.good_matchesStop=self.kp_matcherStop.compute_matches()
             self.good_matchesYield=self.kp_matcherYield.compute_matches()
-            
             see_rect = self.hough_finder.find_lines()
+            sees_motion = self.motionDetector.process_image(self.cv_image)
 
                         #TODO- change 8
             if len(self.good_matchesStop)>4 and see_rect==False and self.see_rect_last ==True and len(self.good_matchesStop)>len(self.good_matchesYield):
@@ -89,10 +91,29 @@ class CameraImage(object):
                 self.twist.linear.x = 0
                 self.pub.publish(self.twist)
                 r.sleep()
+
             elif len(self.good_matchesYield)>4 and len(self.good_matchesStop)<len(self.good_matchesYield):
                 self.seesYieldSign = True
                 self.seesStopSign = False
+                self.twist.linear.x = 0
+                self.pub.publish(self.twist)
                 print "YIEEEEEEEEEEELDDDDD"
+                print self.twist.linear.x
+                # rospy.sleep(3)
+                while sees_motion:
+                    print "motion"
+                    self.twist.linear.x = 0
+                    self.pub.publish(self.twist)
+                    rospy.sleep(3)
+                    sees_motion = self.motionDetector.process_image(self.cv_image)
+                    rospy.sleep(.01)
+                    sees_motion = self.motionDetector.process_image(self.cv_image)
+                    rospy.sleep(.01)
+                    sees_motion = self.motionDetector.process_image(self.cv_image)
+                self.twist.linear.x = 0.1
+                self.pub.publish(self.twist)
+                rospy.sleep(3)
+
             else:
                 self.seesYieldSign = False
                 self.seesStopSign = False
