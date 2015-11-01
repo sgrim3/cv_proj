@@ -21,12 +21,11 @@ class HoughLineDetector(object):
 		lines = cv2.HoughLinesP(self.edges,.01,np.pi/180,95,minLineLength = 1, maxLineGap = 1)
 
 		angles=[]
-		print lines
 		if not lines==None:
 			for i in range(len(lines[0])):
-				print lines[0][i]
+				
 				angles.append(math.atan2(lines[0][i][0]-lines[0][i][2],lines[0][i][1]-lines[0][i][3]))
-				print angles[i]
+				
 				cv2.line(self.img,(lines[0][i][0],lines[0][i][1]),(lines[0][i][2],lines[0][i][3]),(0,0,255))
 			rects=[]
 			for i in range(len(angles)):
@@ -38,7 +37,7 @@ class HoughLineDetector(object):
 
 			for rect in rects:
 				for i in range(2):
-					if rect[i][1]>300:
+					if rect[i][1]>350:
 						return True
 		# while not rospy.is_shutdown():
 		# 	cv2.namedWindow('MYWIN2')

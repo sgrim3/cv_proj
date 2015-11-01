@@ -61,9 +61,9 @@ class CameraImage(object):
 
     def run(self):
         """ The main run loop, in this node it doesn't do anything """
-        r = rospy.Rate(5)
+        r = rospy.Rate(10)
         # cv2.namedWindow('UI')
-        cv2.namedWindow('MYWIN')
+        #cv2.namedWindow('MYWIN')
         # cv2.setMouseCallback("MYWIN",self.mouse_event,self.kp_matcher)
         # cv2.createTrackbar('Corner Threshold', 'UI', 0, 100, self.set_corner_threshold)
         # cv2.createTrackbar('Ratio Threshold', 'UI', 100, 100, self.set_ratio_threshold)
@@ -75,7 +75,7 @@ class CameraImage(object):
         # cv2.createTrackbar('Green Lower', 'UI', 0, 100, self.set_green_lower_bound)
         # cv2.createTrackbar('Green Upper', 'UI', 255, 255, self.set_green_upper_bound)
 
-        cv2.namedWindow('hough')
+        #cv2.namedWindow('hough')
         while not rospy.is_shutdown():
                
             self.good_matchesStop=self.kp_matcherStop.compute_matches()
@@ -99,7 +99,7 @@ class CameraImage(object):
                 self.pub.publish(self.twist)
                 print "YIEEEEEEEEEEELDDDDD"
                 print self.twist.linear.x
-                # rospy.sleep(3)
+                rospy.sleep(1)
                 while sees_motion:
                     print "motion"
                     self.twist.linear.x = 0
@@ -124,8 +124,8 @@ class CameraImage(object):
 
             self.see_rect_last = see_rect
 
-            cv2.imshow("hough",self.hough_finder.img)
-            cv2.imshow("MYWIN",self.kp_matcherStop.im)
+            #cv2.imshow("hough",self.hough_finder.img)
+            #cv2.imshow("MYWIN",self.kp_matcherStop.im)
             cv2.imshow("MYWIN1",self.kp_matcherYield.im)
             cv2.waitKey(50)
             r.sleep()
