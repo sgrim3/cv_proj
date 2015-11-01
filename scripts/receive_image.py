@@ -81,7 +81,7 @@ class CameraImage(object):
             self.good_matchesStop=self.kp_matcherStop.compute_matches()
             self.good_matchesYield=self.kp_matcherYield.compute_matches()
             see_rect = self.hough_finder.find_lines()
-            sees_motion = self.motionDetector.process_image(self.cv_image)
+            #sees_motion = self.motionDetector.process_image(self.cv_image)
 
                         #TODO- change 8
             if len(self.good_matchesStop)>4 and see_rect==False and self.see_rect_last ==True and len(self.good_matchesStop)>len(self.good_matchesYield):
@@ -100,6 +100,11 @@ class CameraImage(object):
                 print "YIEEEEEEEEEEELDDDDD"
                 print self.twist.linear.x
                 rospy.sleep(1)
+                sees_motion = self.motionDetector.process_image(self.cv_image)
+                rospy.sleep(.01)
+                sees_motion = self.motionDetector.process_image(self.cv_image)
+                rospy.sleep(.01)
+                sees_motion = self.motionDetector.process_image(self.cv_image)
                 while sees_motion:
                     print "motion"
                     self.twist.linear.x = 0
@@ -124,9 +129,9 @@ class CameraImage(object):
 
             self.see_rect_last = see_rect
 
-            #cv2.imshow("hough",self.hough_finder.img)
-            #cv2.imshow("MYWIN",self.kp_matcherStop.im)
-            cv2.imshow("MYWIN1",self.kp_matcherYield.im)
+            cv2.imshow("hough",self.hough_finder.img)
+            cv2.imshow("MYWIN",self.kp_matcherStop.im)
+            #cv2.imshow("MYWIN1",self.kp_matcherYield.im)
             cv2.waitKey(50)
             r.sleep()
         cv2.destroyAllWindows()

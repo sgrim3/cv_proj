@@ -51,7 +51,7 @@ class MotionDetection(object):
             (cnts, _)=cv2.findContours(thresh.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
             for c in cnts:
-                print cv2.contourArea(c)
+                #print cv2.contourArea(c)
                 if cv2.contourArea(c)>500:
                     self.shouldstop=True
             
