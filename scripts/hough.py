@@ -35,7 +35,7 @@ class HoughLineDetector(object):
 			#vertical locations. If they do, then those two ,lines define a rectangle
 			for i in range(len(angles)):
 				for j in range(len(angles)):
-					if abs(angles[i]-angles[j])<.1 and i not == j:
+					if abs(angles[i]-angles[j])<.1 and i != j:
 						if abs(lines[0][i][0]-lines[0][j][0])<20 and abs(lines[0][i][2]-lines[0][j][2])<20:
 							rects.append(((lines[0][i][0],lines[0][i][1]), (lines[0][j][2],lines[0][j][3])))
 							cv2.rectangle(self.img, (lines[0][i][0],lines[0][i][1]), (lines[0][j][2],lines[0][j][3]), (255,0,0), 10, 8, 0) 
